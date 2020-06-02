@@ -15,8 +15,8 @@ public class Player : MonoBehaviour
     {
         get
         {
-            if (transform.position.y < 0.0877777F) return true; // 如果Y軸小於 0.087傳回true
-            else return false;                              //否則 傳回false
+            if (transform.position.y < 0.0877777F) return true;  // 如果Y軸小於 0.087傳回true
+            else return false;                                   //否則 傳回false
         }    
 
 }
@@ -27,11 +27,18 @@ public class Player : MonoBehaviour
     private Vector3 angle;
 
     private Animator ani;
-    private Rigidbody rig;
+    private Rigidbody rig;//剛體
+    private AudioSource aud;//喇叭
+    private GameManager gm;//遊戲管理器
     /// <summary>
     /// 跳躍力道：從0慢慢增加
     /// </summary>
     private float jump;
+
+    [Header("肥宅餅音效")]
+    public AudioClip soundChip;
+    [Header("健康食物音效")]
+    public AudioClip soundSalad;
 
 
     #endregion
@@ -105,9 +112,21 @@ public class Player : MonoBehaviour
     /// <summary>
     ///碰到道具：碰到帶有標籤【肥宅餅】的物件 
     /// </summary>
-    private void HitProp()
+    private void HitProp(GameObject prop)
     {
+        if (prop.tag=="肥宅餅")
+        {
+            aud.PlayOneShot(soundChip, 2);  //喇叭.播放一次音效(音效片段.音量)
+            Destroy(prop);                  //刪除(物件)
+        }
+        else if (prop.tag=="健康食物")
+        {
+            aud.PlayOneShot(soundSalad, 2);
+            Destroy(prop);       
+        }
+        gm.GetProp(prop.tag);       //告知GM取得道具(將道具標籤傳過去)
 
+        //print("碰到的道具標籤為：" + prop.name);
     }
 
 
@@ -121,20 +140,58 @@ public class Player : MonoBehaviour
         //剛體 = 取得元件<剛體>();
         rig = GetComponent<Rigidbody>();
         ani = GetComponent<Animator>();
+        aud = GetComponent<AudioSource>();
+        //FOOT僅限於場景上只有一個類別存在時使用
+        //例如：場景上只有一個GameManager類別時可以使用他來取得
+        gm = FindObjectOfType<GameManager>();
+
     }
 
-    //固定更新頻率事件：1秒50禎，是用物理必須在事件內
+    //固定更新頻率事件：1秒50禎，使用物理必須在此事件內
     private void FixedUpdate()
     {
         Move();
 
     }
-
+    //更新事件：1秒約60幀
     private void Update()
     {
         Jump();
         
     }
+    //碰撞事件：當物件碰撞時開始執行一次(沒有勾選is Trigger)
+    //collosion碰到物件的資訊
+    private void OnCollisionEnter(Collision collision)
+    {
+        
+    }
+    //碰撞事件：當物件碰撞離開時執行一次(沒有勾選is Trigger)
+    private void OnCollisionExit(Collision collision)
+    {
+        
+    }
+    //碰撞事件：當物件碰撞開始時持續執行(沒有勾選is Trigger)60 FPS
+    private void OnCollisionStay(Collision collision)
+    {
+        
+    }
+    /*---------------*/
+    //觸發事件：當物件碰撞時開始執行一次(有勾選is Trigger)
+    private void OnTriggerEnter(Collider other)
+    {
+        HitProp(other.gameObject);
+    }
+    //觸發事件：當物件碰撞離開時執行一次(有勾選is Trigger)
+    private void OnTriggerExit(Collider other)
+    {
+        
+    }
+    //觸發事件：當物件碰撞開始時持續執行(有勾選is Trigger)60 FPS
+    private void OnTriggerStay(Collider other)
+    {
+        
+    }
+
     #endregion
 
 }
